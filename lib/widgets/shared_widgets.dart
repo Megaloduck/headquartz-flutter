@@ -1,4 +1,12 @@
+// lib/widgets/shared_widgets.dart
+//
+// Theme-aware version of the shared building blocks. All previously
+// hardcoded colors (Colors.white, Color(0xFFF5F6FA), Colors.grey.shade*)
+// now read from the HeadquartzColors theme extension, so light/dark
+// mode flips correctly across every department page.
+
 import 'package:flutter/material.dart';
+import '../core/theme/app_themes.dart';
 
 // ─────────────────────────────────────────────
 // STAT CARD
@@ -24,6 +32,7 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -40,7 +49,8 @@ class StatCard extends StatelessWidget {
               Icon(icon, color: color, size: 22),
               if (trend != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: trendUp
                         ? Colors.green.withOpacity(0.15)
@@ -50,7 +60,9 @@ class StatCard extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        trendUp ? Icons.trending_up : Icons.trending_down,
+                        trendUp
+                            ? Icons.trending_up
+                            : Icons.trending_down,
                         size: 12,
                         color: trendUp ? Colors.green : Colors.red,
                       ),
@@ -82,7 +94,7 @@ class StatCard extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.grey.shade600,
+              color: hq.secondaryText,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -133,12 +145,17 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: hq.primaryText,
+          ),
         ),
         if (actionLabel != null)
           TextButton(
@@ -174,15 +191,16 @@ class DataRowTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: hq.card,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: hq.shadow,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -204,21 +222,35 @@ class DataRowTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13)),
-                Text(subtitle,
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade500)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: hq.primaryText,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: hq.secondaryText,
+                  ),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(trailing,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 13)),
+              Text(
+                trailing,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: hq.primaryText,
+                ),
+              ),
               if (statusColor != null)
                 Container(
                   margin: const EdgeInsets.only(top: 3),
@@ -265,7 +297,8 @@ class ChartPlaceholder extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.bar_chart_rounded, size: 40, color: color.withOpacity(0.5)),
+          Icon(Icons.bar_chart_rounded,
+              size: 40, color: color.withOpacity(0.5)),
           const SizedBox(height: 8),
           Text(
             title,
@@ -333,8 +366,9 @@ class ModuleScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: hq.page,
       appBar: AppBar(
         backgroundColor: color,
         foregroundColor: Colors.black87,
@@ -342,12 +376,16 @@ class ModuleScaffold extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w700)),
-            Text(department,
-                style: const TextStyle(
-                    fontSize: 11, fontWeight: FontWeight.w400)),
+            Text(
+              title,
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            Text(
+              department,
+              style: const TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w400),
+            ),
           ],
         ),
         actions: [

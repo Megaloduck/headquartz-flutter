@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+
+import 'core/theme/app_themes.dart';
+import 'core/theme/theme_controller.dart';
+
+import 'core/models/player_role.dart';
+import 'core/services/role_service.dart';
+import 'screens/login/login_screen.dart'; 
+
 import 'screens/hr/hr_screen.dart';
 import 'screens/finance/finance_screen.dart';
 import 'screens/sales/sales_screen.dart';
@@ -160,30 +168,35 @@ class HeadquartzApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Headquartz ERP',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFFC107),
-          brightness: Brightness.light,
-        ),
-        fontFamily: 'Roboto',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFFFC107),
-          foregroundColor: Colors.black87,
-          elevation: 0,
-          centerTitle: false,
-          titleTextStyle: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
+    return ListenableBuilder(
+      listenable: ThemeController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Headquartz ERP',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFFFFC107),
+              brightness: Brightness.light,
+            ),
+            fontFamily: 'Roboto',
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFFFFC107),
+              foregroundColor: Colors.black87,
+              elevation: 0,
+              centerTitle: false,
+              titleTextStyle: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
-        ),
-      ),
-      home: const HomeScreen(),
+          home: const LoginScreen(),
+        );
+      },
     );
   }
 }
@@ -194,49 +207,93 @@ class HeadquartzApp extends StatelessWidget {
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
+ 
+  void _logout(BuildContext context) {
+    RoleService.instance.logout();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
+  }
+ 
   @override
   Widget build(BuildContext context) {
+    final role = RoleService.instance.currentRole;
+    final visible = departments
+        .where((d) => RoleService.instance.canSeeDepartment(d.name))
+        .toList();
+ 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Headquartz'),
+            const Text('Headquartz'),
             Text(
-              'Enterprise Resource Planning Simulator',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+              role != null
+                  ? 'Signed in as ${role.displayName}'
+                  : 'Enterprise Resource Planning Simulator',
+              style: const TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w400),
             ),
           ],
         ),
         actions: [
+              IconButton(
+    tooltip: 'Toggle theme',
+    icon: Icon(ThemeController.instance.isDark
+        ? Icons.light_mode_rounded
+        : Icons.dark_mode_rounded),
+    onPressed: () => ThemeController.instance.toggle(context),
+  ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.account_circle_outlined),
-            onPressed: () {},
+            tooltip: 'Logout',
+            icon: const Icon(Icons.logout_rounded),
+            onPressed: () => _logout(context),
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: GridView.builder(
-          itemCount: departments.length,
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 320,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.1,
-          ),
-          itemBuilder: (context, index) {
-            final dept = departments[index];
-            return DepartmentCard(department: dept);
-          },
-        ),
-      ),
+      body: visible.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock_outline_rounded,
+                        size: 56, color: Colors.grey.shade400),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No departments available for this role',
+                      style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: GridView.builder(
+                itemCount: visible.length,
+                gridDelegate:
+                    const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 320,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 1.1,
+                ),
+                itemBuilder: (context, index) {
+                  return DepartmentCard(department: visible[index]);
+                },
+              ),
+            ),
     );
   }
 }
