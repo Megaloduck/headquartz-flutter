@@ -1,12 +1,11 @@
+// lib/app.dart
 import 'package:flutter/material.dart';
-
-import 'core/theme/app_themes.dart';
-import 'core/theme/theme_controller.dart';
 
 import 'core/models/player_role.dart';
 import 'core/services/role_service.dart';
-import 'screens/login/login_screen.dart'; 
-
+import 'core/theme/app_themes.dart';
+import 'core/theme/theme_controller.dart';
+import 'screens/login/login_screen.dart';
 import 'screens/hr/hr_screen.dart';
 import 'screens/finance/finance_screen.dart';
 import 'screens/sales/sales_screen.dart';
@@ -22,7 +21,7 @@ import 'screens/management/management_screen.dart';
 
 class DepartmentModule {
   final String name;
-  final String type; // 'page'
+  final String type;
   const DepartmentModule({required this.name, required this.type});
 }
 
@@ -41,7 +40,7 @@ class Department {
 }
 
 // ─────────────────────────────────────────────
-// DATA  (mirrors the Headquartz role-structure diagram)
+// DEPARTMENT DATA
 // ─────────────────────────────────────────────
 
 const List<Department> departments = [
@@ -174,26 +173,9 @@ class HeadquartzApp extends StatelessWidget {
         return MaterialApp(
           title: 'Headquartz ERP',
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFFFFC107),
-              brightness: Brightness.light,
-            ),
-            fontFamily: 'Roboto',
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFFFFC107),
-              foregroundColor: Colors.black87,
-              elevation: 0,
-              centerTitle: false,
-              titleTextStyle: TextStyle(
-                color: Colors.black87,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: ThemeController.instance.mode,
           home: const LoginScreen(),
         );
       },
@@ -202,12 +184,12 @@ class HeadquartzApp extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// HOME SCREEN — department grid
+// HOME SCREEN — role-filtered department grid
 // ─────────────────────────────────────────────
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
- 
+
   void _logout(BuildContext context) {
     RoleService.instance.logout();
     Navigator.of(context).pushAndRemoveUntil(
@@ -215,14 +197,15 @@ class HomeScreen extends StatelessWidget {
       (_) => false,
     );
   }
- 
+
   @override
   Widget build(BuildContext context) {
     final role = RoleService.instance.currentRole;
     final visible = departments
         .where((d) => RoleService.instance.canSeeDepartment(d.name))
         .toList();
- 
+    final hq = context.hq;
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -233,19 +216,26 @@ class HomeScreen extends StatelessWidget {
               role != null
                   ? 'Signed in as ${role.displayName}'
                   : 'Enterprise Resource Planning Simulator',
-              style: const TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w400),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
             ),
           ],
         ),
         actions: [
-              IconButton(
-    tooltip: 'Toggle theme',
-    icon: Icon(ThemeController.instance.isDark
-        ? Icons.light_mode_rounded
-        : Icons.dark_mode_rounded),
-    onPressed: () => ThemeController.instance.toggle(context),
-  ),
+          // Theme toggle — sun in dark mode, moon in light mode
+          ListenableBuilder(
+            listenable: ThemeController.instance,
+            builder: (context, _) => IconButton(
+              tooltip: ThemeController.instance.isDark
+                  ? 'Switch to Light'
+                  : 'Switch to Dark',
+              icon: Icon(
+                ThemeController.instance.isDark
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
+              ),
+              onPressed: () => ThemeController.instance.toggle(context),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {},
@@ -266,13 +256,14 @@ class HomeScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.lock_outline_rounded,
-                        size: 56, color: Colors.grey.shade400),
+                        size: 56, color: hq.tertiaryText),
                     const SizedBox(height: 12),
                     Text(
                       'No departments available for this role',
                       style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w600),
+                        color: hq.secondaryText,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -289,9 +280,8 @@ class HomeScreen extends StatelessWidget {
                   crossAxisSpacing: 16,
                   childAspectRatio: 1.1,
                 ),
-                itemBuilder: (context, index) {
-                  return DepartmentCard(department: visible[index]);
-                },
+                itemBuilder: (context, index) =>
+                    DepartmentCard(department: visible[index]),
               ),
             ),
     );
@@ -308,14 +298,13 @@ class DepartmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => DepartmentScreen(department: department),
-          ),
-        );
-      },
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => DepartmentScreen(department: department),
+        ),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: department.color.withOpacity(0.15),
@@ -326,9 +315,9 @@ class DepartmentCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header pill
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: department.color,
                 borderRadius: BorderRadius.circular(8),
@@ -347,11 +336,11 @@ class DepartmentCard extends StatelessWidget {
               department.managerRole,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.grey.shade600,
+                color: hq.secondaryText,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const Divider(height: 16),
+            Divider(height: 16, color: hq.border),
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -367,7 +356,10 @@ class DepartmentCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 m.name,
-                                style: const TextStyle(fontSize: 12),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: hq.primaryText,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -480,7 +472,10 @@ class DepartmentScreen extends StatelessWidget {
           case 'Logistics Reports':   return const MgmtLogisticsReportsPage();
         }
     }
-    return ModulePage(moduleName: moduleName, departmentName: departmentName, color: color);
+    return ModulePage(
+        moduleName: moduleName,
+        departmentName: departmentName,
+        color: color);
   }
 
   @override
@@ -488,12 +483,14 @@ class DepartmentScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: department.color,
+        foregroundColor: Colors.black87,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(department.name),
             Text(department.managerRole,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
+                style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w400)),
           ],
         ),
       ),
@@ -506,16 +503,15 @@ class DepartmentScreen extends StatelessWidget {
           return ModuleTile(
             module: module,
             color: department.color,
-            onTap: () {
-              final screen = _resolveScreen(
-                departmentName: department.name,
-                moduleName: module.name,
-                color: department.color,
-              );
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => screen),
-              );
-            },
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => _resolveScreen(
+                  departmentName: department.name,
+                  moduleName: module.name,
+                  color: department.color,
+                ),
+              ),
+            ),
           );
         },
       ),
@@ -541,6 +537,7 @@ class ModuleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     return ListTile(
       onTap: onTap,
       tileColor: color.withOpacity(0.12),
@@ -553,19 +550,23 @@ class ModuleTile extends StatelessWidget {
       ),
       title: Text(
         module.name,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: hq.primaryText,
+        ),
       ),
       subtitle: Text(
         module.type.toUpperCase(),
-        style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+        style: TextStyle(fontSize: 10, color: hq.tertiaryText),
       ),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: Icon(Icons.chevron_right, color: hq.secondaryText),
     );
   }
 }
 
 // ─────────────────────────────────────────────
-// MODULE PAGE — placeholder for each feature
+// MODULE PAGE — fallback placeholder
 // ─────────────────────────────────────────────
 
 class ModulePage extends StatelessWidget {
@@ -582,15 +583,18 @@ class ModulePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: color,
+        foregroundColor: Colors.black87,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(moduleName),
             Text(departmentName,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
+                style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w400)),
           ],
         ),
       ),
@@ -601,8 +605,7 @@ class ModulePage extends StatelessWidget {
             CircleAvatar(
               radius: 48,
               backgroundColor: color.withOpacity(0.2),
-              child: Icon(Icons.construction_rounded,
-                  size: 40, color: color),
+              child: Icon(Icons.construction_rounded, size: 40, color: color),
             ),
             const SizedBox(height: 24),
             Text(
@@ -615,7 +618,7 @@ class ModulePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '$departmentName • Page',
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(color: hq.secondaryText),
             ),
             const SizedBox(height: 32),
             FilledButton.icon(

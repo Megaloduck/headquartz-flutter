@@ -1,9 +1,11 @@
 // lib/widgets/shared_widgets.dart
 //
-// Theme-aware version of the shared building blocks. All previously
-// hardcoded colors (Colors.white, Color(0xFFF5F6FA), Colors.grey.shade*)
-// now read from the HeadquartzColors theme extension, so light/dark
-// mode flips correctly across every department page.
+// Theme-aware shared widgets. Replaces every hardcoded colour
+// (Colors.white, Color(0xFFF5F6FA), Colors.grey.shade*) with
+// tokens from HeadquartzColors so dark mode flips correctly.
+//
+// Also adds HqSearchField — a drop-in for the three screens
+// that previously used TextField(fillColor: Colors.white).
 
 import 'package:flutter/material.dart';
 import '../core/theme/app_themes.dart';
@@ -49,8 +51,7 @@ class StatCard extends StatelessWidget {
               Icon(icon, color: color, size: 22),
               if (trend != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: trendUp
                         ? Colors.green.withOpacity(0.15)
@@ -60,9 +61,7 @@ class StatCard extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        trendUp
-                            ? Icons.trending_up
-                            : Icons.trending_down,
+                        trendUp ? Icons.trending_up : Icons.trending_down,
                         size: 12,
                         color: trendUp ? Colors.green : Colors.red,
                       ),
@@ -110,7 +109,6 @@ class StatCard extends StatelessWidget {
 
 class StatsGrid extends StatelessWidget {
   final List<StatCard> cards;
-
   const StatsGrid({super.key, required this.cards});
 
   @override
@@ -199,11 +197,7 @@ class DataRowTile extends StatelessWidget {
         color: hq.card,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
-          BoxShadow(
-            color: hq.shadow,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: hq.shadow, blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -211,59 +205,81 @@ class DataRowTile extends StatelessWidget {
           CircleAvatar(
             radius: 18,
             backgroundColor: accentColor.withOpacity(0.15),
-            child: Icon(
-              leadingIcon ?? Icons.circle,
-              size: 16,
-              color: accentColor,
-            ),
+            child: Icon(leadingIcon ?? Icons.circle, size: 16, color: accentColor),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: hq.primaryText,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: hq.secondaryText,
-                  ),
-                ),
+                Text(title,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: hq.primaryText)),
+                Text(subtitle,
+                    style: TextStyle(fontSize: 11, color: hq.secondaryText)),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                trailing,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: hq.primaryText,
-                ),
-              ),
+              Text(trailing,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: hq.primaryText)),
               if (statusColor != null)
                 Container(
                   margin: const EdgeInsets.only(top: 3),
                   width: 8,
                   height: 8,
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration:
+                      BoxDecoration(color: statusColor, shape: BoxShape.circle),
                 ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// HQ SEARCH FIELD
+// Drop-in for any screen that had:
+//   TextField(decoration: InputDecoration(fillColor: Colors.white, ...))
+// Usage: HqSearchField(hint: 'Search shipments...')
+// ─────────────────────────────────────────────
+
+class HqSearchField extends StatelessWidget {
+  final String hint;
+  final ValueChanged<String>? onChanged;
+
+  const HqSearchField({super.key, required this.hint, this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final hq = context.hq;
+    return TextField(
+      onChanged: onChanged,
+      style: TextStyle(color: hq.primaryText, fontSize: 14),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: hq.tertiaryText),
+        prefixIcon: Icon(Icons.search, color: hq.secondaryText),
+        filled: true,
+        fillColor: hq.card,
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: hq.border, width: 1)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: kBrandAmber, width: 1.5)),
       ),
     );
   }
@@ -297,8 +313,7 @@ class ChartPlaceholder extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.bar_chart_rounded,
-              size: 40, color: color.withOpacity(0.5)),
+          Icon(Icons.bar_chart_rounded, size: 40, color: color.withOpacity(0.5)),
           const SizedBox(height: 8),
           Text(
             title,
@@ -321,7 +336,6 @@ class ChartPlaceholder extends StatelessWidget {
 class StatusBadge extends StatelessWidget {
   final String label;
   final Color color;
-
   const StatusBadge({super.key, required this.label, required this.color});
 
   @override
@@ -332,20 +346,15 @@ class StatusBadge extends StatelessWidget {
         color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          color: color,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 10, color: color, fontWeight: FontWeight.w700)),
     );
   }
 }
 
 // ─────────────────────────────────────────────
-// MODULE SCAFFOLD — consistent layout wrapper
+// MODULE SCAFFOLD
 // ─────────────────────────────────────────────
 
 class ModuleScaffold extends StatelessWidget {
@@ -376,16 +385,12 @@ class ModuleScaffold extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            Text(
-              department,
-              style: const TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w400),
-            ),
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700)),
+            Text(department,
+                style: const TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w400)),
           ],
         ),
         actions: [
@@ -396,10 +401,7 @@ class ModuleScaffold extends StatelessWidget {
         ],
       ),
       floatingActionButton: fab,
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: children,
-      ),
+      body: ListView(padding: const EdgeInsets.all(16), children: children),
     );
   }
 }

@@ -1,13 +1,11 @@
 // lib/screens/login/login_screen.dart
-//
-// Role-picker login screen. Mirrors the MAUI LoginPage:
-// the user picks a role from a dropdown, taps Login, and is sent
-// to the role-gated HomeScreen.
-
 import 'package:flutter/material.dart';
+
 import '../../app.dart';
 import '../../core/models/player_role.dart';
 import '../../core/services/role_service.dart';
+import '../../core/theme/app_themes.dart';
+import '../../core/theme/theme_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,10 +26,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final hq = context.hq;
     final roles = RoleService.instance.availableRoles;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: hq.page,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          ListenableBuilder(
+            listenable: ThemeController.instance,
+            builder: (context, _) => IconButton(
+              tooltip: ThemeController.instance.isDark
+                  ? 'Switch to Light'
+                  : 'Switch to Dark',
+              icon: Icon(
+                ThemeController.instance.isDark
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
+                color: hq.secondaryText,
+              ),
+              onPressed: () => ThemeController.instance.toggle(context),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -42,11 +63,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // ── Logo / Title ─────────────────────────────
+                  // ── Logo ─────────────────────────────────────
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFC107),
+                      color: kBrandAmber,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Column(
@@ -76,15 +97,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // ── Card ─────────────────────────────────────
+                  // ── Login card ───────────────────────────────
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: hq.card,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: hq.border),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: hq.shadow,
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -93,38 +115,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Sign in',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        Text('Sign in',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: hq.primaryText)),
                         const SizedBox(height: 4),
-                        Text(
-                          'Choose a role to continue',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
+                        Text('Choose a role to continue',
+                            style: TextStyle(
+                                fontSize: 12, color: hq.secondaryText)),
                         const SizedBox(height: 20),
 
-                        // Role picker
+                        // Role dropdown
                         Container(
                           padding:
                               const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF5F6FA),
+                            color: hq.page,
                             borderRadius: BorderRadius.circular(10),
-                            border:
-                                Border.all(color: Colors.grey.shade200),
+                            border: Border.all(color: hq.border),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<PlayerRole>(
                               value: _selected,
                               isExpanded: true,
-                              icon: const Icon(Icons.expand_more_rounded),
+                              dropdownColor: hq.card,
+                              icon: Icon(Icons.expand_more_rounded,
+                                  color: hq.secondaryText),
                               items: roles
                                   .map((r) => DropdownMenuItem(
                                         value: r,
@@ -135,29 +152,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 color: _colorFor(r)),
                                             const SizedBox(width: 10),
                                             Text(r.displayName,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                     fontSize: 14,
                                                     fontWeight:
-                                                        FontWeight.w600)),
+                                                        FontWeight.w600,
+                                                    color: hq.primaryText)),
                                           ],
                                         ),
                                       ))
                                   .toList(),
                               onChanged: (r) {
-                                if (r != null) {
-                                  setState(() => _selected = r);
-                                }
+                                if (r != null) setState(() => _selected = r);
                               },
                             ),
                           ),
                         ),
                         const SizedBox(height: 20),
 
-                        // Login button
                         FilledButton.icon(
                           onPressed: _login,
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFC107),
+                            backgroundColor: kBrandAmber,
                             foregroundColor: Colors.black87,
                             padding:
                                 const EdgeInsets.symmetric(vertical: 14),
@@ -166,25 +181,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           icon: const Icon(Icons.login_rounded),
-                          label: const Text(
-                            'Login',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700),
-                          ),
+                          label: const Text('Login',
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w700)),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Demo build — no password required',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
+                  Text('Demo build — no password required',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 11, color: hq.tertiaryText)),
                 ],
               ),
             ),
@@ -194,9 +202,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Visual cues per role — reuses the department palette from app.dart
   Color _colorFor(PlayerRole r) => switch (r) {
-        PlayerRole.ceo => const Color(0xFFFFC107),
+        PlayerRole.ceo => kBrandAmber,
         PlayerRole.hrManager => const Color(0xFF4DD0C4),
         PlayerRole.financeManager => const Color(0xFFFFD54F),
         PlayerRole.salesManager => const Color(0xFFCE93D8),

@@ -1,7 +1,12 @@
+// lib/screens/logistics/logistics_screen.dart
 import 'package:flutter/material.dart';
 import '../../widgets/shared_widgets.dart';
 
 const Color _logColor = Color(0xFFEF9A9A);
+
+// ─────────────────────────────────────────────
+// LOGISTICS DASHBOARD
+// ─────────────────────────────────────────────
 
 class LogisticsDashboardPage extends StatelessWidget {
   const LogisticsDashboardPage({super.key});
@@ -33,6 +38,10 @@ class LogisticsDashboardPage extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
+// SHIPMENTS
+// ─────────────────────────────────────────────
+
 class ShipmentsPage extends StatelessWidget {
   const ShipmentsPage({super.key});
   @override
@@ -49,15 +58,8 @@ class ShipmentsPage extends StatelessWidget {
           StatCard(label: 'Failed', value: '15', icon: Icons.cancel_rounded, color: Colors.red),
         ]),
         const SizedBox(height: 20),
-        TextField(
-          decoration: InputDecoration(
-            hintText: 'Search shipments...',
-            prefixIcon: const Icon(Icons.search),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          ),
-        ),
+        // ✅ HqSearchField replaces hardcoded TextField(fillColor: Colors.white)
+        const HqSearchField(hint: 'Search shipments...'),
         const SizedBox(height: 16),
         const SectionHeader(title: 'Active Shipments'),
         const SizedBox(height: 8),
@@ -77,6 +79,10 @@ class ShipmentsPage extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// DELIVERY TRACKING
+// ─────────────────────────────────────────────
 
 class DeliveryTrackingPage extends StatelessWidget {
   const DeliveryTrackingPage({super.key});
@@ -106,6 +112,10 @@ class DeliveryTrackingPage extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// ROUTE PLANNER
+// ─────────────────────────────────────────────
 
 class RoutePlannerPage extends StatelessWidget {
   const RoutePlannerPage({super.key});
@@ -137,6 +147,10 @@ class RoutePlannerPage extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
+// SLA MANAGEMENT
+// ─────────────────────────────────────────────
+
 class SlaManagementPage extends StatelessWidget {
   const SlaManagementPage({super.key});
   @override
@@ -167,6 +181,10 @@ class SlaManagementPage extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
+// FLEET MANAGEMENT
+// ─────────────────────────────────────────────
+
 class FleetManagementPage extends StatelessWidget {
   const FleetManagementPage({super.key});
   @override
@@ -196,6 +214,10 @@ class FleetManagementPage extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// LOGISTICS REPORTS
+// ─────────────────────────────────────────────
 
 class LogisticsReportsPage extends StatelessWidget {
   const LogisticsReportsPage({super.key});

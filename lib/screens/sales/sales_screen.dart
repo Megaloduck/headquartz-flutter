@@ -1,3 +1,4 @@
+// lib/screens/sales/sales_screen.dart
 import 'package:flutter/material.dart';
 import '../../widgets/shared_widgets.dart';
 
@@ -59,15 +60,8 @@ class ClientManagementPage extends StatelessWidget {
           StatCard(label: 'New This Month', value: '7', icon: Icons.person_add_rounded, color: Colors.blue),
         ]),
         const SizedBox(height: 20),
-        TextField(
-          decoration: InputDecoration(
-            hintText: 'Search clients...',
-            prefixIcon: const Icon(Icons.search),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          ),
-        ),
+        // ✅ HqSearchField replaces hardcoded TextField(fillColor: Colors.white)
+        const HqSearchField(hint: 'Search clients...'),
         const SizedBox(height: 16),
         const SectionHeader(title: 'Client List'),
         const SizedBox(height: 8),

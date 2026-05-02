@@ -1,7 +1,12 @@
+// lib/screens/warehouse/warehouse_screen.dart
 import 'package:flutter/material.dart';
 import '../../widgets/shared_widgets.dart';
 
 const Color _whColor = Color(0xFF90CAF9);
+
+// ─────────────────────────────────────────────
+// WAREHOUSE DASHBOARD
+// ─────────────────────────────────────────────
 
 class WarehouseDashboardPage extends StatelessWidget {
   const WarehouseDashboardPage({super.key});
@@ -32,6 +37,10 @@ class WarehouseDashboardPage extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
+// INVENTORY MANAGEMENT
+// ─────────────────────────────────────────────
+
 class InventoryManagementPage extends StatelessWidget {
   const InventoryManagementPage({super.key});
   @override
@@ -48,15 +57,8 @@ class InventoryManagementPage extends StatelessWidget {
           StatCard(label: 'Overstock', value: '18', icon: Icons.add_shopping_cart_rounded, color: Colors.blue),
         ]),
         const SizedBox(height: 20),
-        TextField(
-          decoration: InputDecoration(
-            hintText: 'Search inventory...',
-            prefixIcon: const Icon(Icons.search),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          ),
-        ),
+        // ✅ HqSearchField replaces hardcoded TextField(fillColor: Colors.white)
+        const HqSearchField(hint: 'Search inventory...'),
         const SizedBox(height: 16),
         const SectionHeader(title: 'Inventory List'),
         const SizedBox(height: 8),
@@ -69,6 +71,10 @@ class InventoryManagementPage extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// STOCK IN
+// ─────────────────────────────────────────────
 
 class StockInPage extends StatelessWidget {
   const StockInPage({super.key});
@@ -105,6 +111,10 @@ class StockInPage extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
+// STOCK OUT
+// ─────────────────────────────────────────────
+
 class StockOutPage extends StatelessWidget {
   const StockOutPage({super.key});
   @override
@@ -132,6 +142,10 @@ class StockOutPage extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// FLOW MANAGEMENT
+// ─────────────────────────────────────────────
 
 class FlowManagementPage extends StatelessWidget {
   const FlowManagementPage({super.key});
@@ -162,6 +176,10 @@ class FlowManagementPage extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
+// STORAGE ALLOCATION
+// ─────────────────────────────────────────────
+
 class StorageAllocationPage extends StatelessWidget {
   const StorageAllocationPage({super.key});
   @override
@@ -191,6 +209,10 @@ class StorageAllocationPage extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────
+// WAREHOUSE REPORTS
+// ─────────────────────────────────────────────
 
 class WarehouseReportsPage extends StatelessWidget {
   const WarehouseReportsPage({super.key});
