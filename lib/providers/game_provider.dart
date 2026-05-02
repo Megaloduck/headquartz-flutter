@@ -1,131 +1,124 @@
 // lib/providers/game_provider.dart
 //
-// Riverpod providers that bridge SimulationEngine ↔ Flutter UI.
-//
-// Usage in any widget:
-//   final state = ref.watch(gameStateProvider);
-//   ref.read(gameEngineProvider).applyStateUpdate(
-//     GameActions.hireEmployee(state, wage: 3000),
-//   );
+// Riverpod 3 providers — uses Notifier API (ChangeNotifierProvider removed in v3).
 
-import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/actions/game_actions.dart';
 import '../core/models/game_state.dart';
 import '../core/services/simulation_engine.dart';
 
-// ─────────────────────────────────────────────
-// 1. Engine provider (singleton, auto-disposed on last listener)
-// ─────────────────────────────────────────────
+// ── 1. Engine provider ────────────────────────────────────────────────────────
 
 final gameEngineProvider = Provider<SimulationEngine>((ref) {
   final engine = SimulationEngine(
     initialState: GameState.initial(),
     tickRate: const Duration(seconds: 1),
   );
-
   ref.onDispose(engine.dispose);
   return engine;
 });
 
-// ─────────────────────────────────────────────
-// 2. GameState stream provider — rebuilds UI on every tick
-// ─────────────────────────────────────────────
+// ── 2. GameState stream ───────────────────────────────────────────────────────
 
 final gameStateProvider = StreamProvider<GameState>((ref) {
   final engine = ref.watch(gameEngineProvider);
   return engine.stateStream;
 });
 
-// ─────────────────────────────────────────────
-// 3. Simulation control notifier
-//    Exposes start/stop/pause/resume/setSpeed
-// ─────────────────────────────────────────────
+// ── 3. SimControl state ───────────────────────────────────────────────────────
 
-class SimControlNotifier extends ChangeNotifier {
-  final SimulationEngine _engine;
+class SimControlState {
+  final bool isRunning;
+  final bool isPaused;
+  final double speedMultiplier;
 
-  bool get isRunning => _engine.isRunning;
-  bool get isPaused => _engine.isPaused;
-  double _speedMultiplier = 1.0;
-  double get speedMultiplier => _speedMultiplier;
+  const SimControlState({
+    this.isRunning = false,
+    this.isPaused = false,
+    this.speedMultiplier = 1.0,
+  });
 
-  SimControlNotifier(this._engine);
+  SimControlState copyWith({
+    bool? isRunning,
+    bool? isPaused,
+    double? speedMultiplier,
+  }) =>
+      SimControlState(
+        isRunning: isRunning ?? this.isRunning,
+        isPaused: isPaused ?? this.isPaused,
+        speedMultiplier: speedMultiplier ?? this.speedMultiplier,
+      );
+}
+
+// ── 4. SimControl Notifier (Riverpod 3 Notifier API) ─────────────────────────
+
+class SimControlNotifier extends Notifier<SimControlState> {
+  SimulationEngine get _engine => ref.read(gameEngineProvider);
+
+  @override
+  SimControlState build() => const SimControlState();
 
   Future<void> start() async {
     await _engine.start();
-    notifyListeners();
+    state = state.copyWith(isRunning: true, isPaused: false);
   }
 
   void stop() {
     _engine.stop();
-    notifyListeners();
+    state = state.copyWith(isRunning: false, isPaused: false);
   }
 
   void pause() {
     _engine.pause();
-    notifyListeners();
+    state = state.copyWith(isPaused: true);
   }
 
   void resume() {
     _engine.resume();
-    notifyListeners();
+    state = state.copyWith(isPaused: false);
   }
 
   void setSpeed(double multiplier) {
-    _speedMultiplier = multiplier.clamp(0.25, 10.0);
-    final ms = (1000 / _speedMultiplier).round();
+    final clamped = multiplier.clamp(0.25, 10.0);
+    final ms = (1000 / clamped).round();
     _engine.setTickRate(Duration(milliseconds: ms));
-    notifyListeners();
+    state = state.copyWith(speedMultiplier: clamped);
   }
 
-  /// Apply a player action — wraps applyStateUpdate.
+  /// Apply a player action. Pass a pure function: (GameState) → GameState.
   void dispatch(GameState Function(GameState) action) {
     final next = action(_engine.lastState);
     _engine.applyStateUpdate(next);
   }
 }
 
-final simControlProvider = ChangeNotifierProvider<SimControlNotifier>((ref) {
-  final engine = ref.watch(gameEngineProvider);
-  return SimControlNotifier(engine);
-});
+final simControlProvider =
+    NotifierProvider<SimControlNotifier, SimControlState>(
+  SimControlNotifier.new,
+);
 
-// ─────────────────────────────────────────────
-// 4. Convenience selector providers
-//    Use these in department screens instead of watching entire GameState
-// ─────────────────────────────────────────────
+// ── 5. Convenience selectors ──────────────────────────────────────────────────
 
-final financeStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.finance);
-});
+final financeStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.finance));
 
-final hrStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.humanResource);
-});
+final hrStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.humanResource));
 
-final warehouseStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.warehouse);
-});
+final warehouseStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.warehouse));
 
-final productionStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.production);
-});
+final productionStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.production));
 
-final salesStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.sales);
-});
+final salesStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.sales));
 
-final marketingStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.marketing);
-});
+final marketingStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.marketing));
 
-final logisticsStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.logistics);
-});
+final logisticsStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.logistics));
 
-final marketStateProvider = Provider<AsyncValue<dynamic>>((ref) {
-  return ref.watch(gameStateProvider).whenData((s) => s.market);
-});
+final marketStateProvider =
+    Provider((ref) => ref.watch(gameStateProvider).whenData((s) => s.market));

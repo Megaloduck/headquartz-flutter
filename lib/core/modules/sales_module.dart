@@ -100,7 +100,7 @@ abstract final class SalesModule {
 
     final updatedWarehouse = state.warehouse.copyWith(
       products: updatedProducts,
-      usedCapacity: updatedProducts.fold(0.0, (s, p) => s + p.stock),
+      usedCapacity: updatedProducts.fold<double>(0.0, (s, p) => s + p.stock),
     );
 
     // ── 5. Keep order list bounded (last 100 orders) ──────────────────

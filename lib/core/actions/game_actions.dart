@@ -153,7 +153,7 @@ abstract final class GameActions {
     return s.copyWith(
       warehouse: s.warehouse.copyWith(
         products: updatedProducts,
-        usedCapacity: updatedProducts.fold(0.0, (sum, p) => sum + p.stock),
+        usedCapacity: updatedProducts.fold<double>(0.0, (sum, p) => sum + p.stock),
       ),
       finance: s.finance.copyWith(cash: s.finance.cash - totalCost),
     );

@@ -26,7 +26,7 @@ class _SimulationDashboardState extends ConsumerState<SimulationDashboard> {
     super.initState();
     // Auto-start simulation when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(simControlProvider).start();
+      ref.read(simControlProvider.notifier).start();
     });
   }
 
@@ -34,7 +34,8 @@ class _SimulationDashboardState extends ConsumerState<SimulationDashboard> {
   Widget build(BuildContext context) {
     final hq = context.hq;
     final stateAsync = ref.watch(gameStateProvider);
-    final control = ref.watch(simControlProvider);
+    final controlState = ref.watch(simControlProvider);
+    final controlNotifier = ref.read(simControlProvider.notifier);
 
     return Scaffold(
       backgroundColor: hq.page,
@@ -58,23 +59,27 @@ class _SimulationDashboardState extends ConsumerState<SimulationDashboard> {
         ),
         actions: [
           // Speed selector
-          _SpeedSelector(control: control),
+          _SpeedSelector(
+            speedMultiplier: controlState.speedMultiplier,
+            onChanged: controlNotifier.setSpeed,
+          ),
           const SizedBox(width: 8),
           // Pause / Resume
           IconButton(
-            tooltip: control.isPaused ? 'Resume' : 'Pause',
-            icon: Icon(control.isPaused
+            tooltip: controlState.isPaused ? 'Resume' : 'Pause',
+            icon: Icon(controlState.isPaused
                 ? Icons.play_arrow_rounded
                 : Icons.pause_rounded),
-            onPressed: () =>
-                control.isPaused ? control.resume() : control.pause(),
+            onPressed: () => controlState.isPaused
+                ? controlNotifier.resume()
+                : controlNotifier.pause(),
           ),
           // Stop
           IconButton(
             tooltip: 'Stop Simulation',
             icon: const Icon(Icons.stop_rounded),
             onPressed: () {
-              control.stop();
+              controlNotifier.stop();
               Navigator.of(context).pop();
             },
           ),
@@ -106,7 +111,7 @@ class _DashboardBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hq = context.hq;
-    final control = ref.read(simControlProvider);
+    final control = ref.read(simControlProvider.notifier);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -279,8 +284,7 @@ class _DashboardBody extends ConsumerWidget {
                 onTap: () {
                   final products = ref
                       .read(gameStateProvider)
-                      .valueOrNull
-                      ?.warehouse
+                      .value?.warehouse
                       .products;
                   if (products == null || products.isEmpty) return;
                   control.dispatch(
@@ -635,13 +639,14 @@ class _ActionButton extends StatelessWidget {
 // ─────────────────────────────────────────────
 
 class _SpeedSelector extends StatelessWidget {
-  final SimControlNotifier control;
-  const _SpeedSelector({required this.control});
+  final double speedMultiplier;
+  final void Function(double) onChanged;
+  const _SpeedSelector({required this.speedMultiplier, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return DropdownButton<double>(
-      value: control.speedMultiplier,
+      value: speedMultiplier,
       dropdownColor: Colors.black87,
       underline: const SizedBox(),
       icon: const Icon(Icons.speed_rounded, color: Colors.black87, size: 18),
@@ -653,7 +658,7 @@ class _SpeedSelector extends StatelessWidget {
         DropdownMenuItem(value: 10.0, child: Text('10×', style: TextStyle(fontSize: 13))),
       ],
       onChanged: (v) {
-        if (v != null) control.setSpeed(v);
+        if (v != null) onChanged(v);
       },
     );
   }
