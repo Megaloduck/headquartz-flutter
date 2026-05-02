@@ -6,7 +6,7 @@ import 'core/services/role_service.dart';
 import 'core/theme/app_themes.dart';
 import 'core/theme/theme_controller.dart';
 import 'screens/login/login_screen.dart';
-import 'features/hr/hr.dart';
+import 'screens/hr/hr_screen.dart';
 import 'screens/finance/finance_screen.dart';
 import 'screens/sales/sales_screen.dart';
 import 'screens/marketing/marketing_screen.dart';

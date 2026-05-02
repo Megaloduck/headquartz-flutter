@@ -1,16 +1,17 @@
 // lib/core/models/game_state.dart
 //
 // Plain immutable Dart class — intentionally NO freezed dependency.
-// This class is sent across Isolate boundaries via SendPort.send(),
-// which requires the object to be a primitive or implement the
-// Dart object copy protocol. Keeping it plain Dart ensures full
-// Isolate compatibility without special handling.
+// Sent across Isolate boundaries via SendPort.send().
 
 import 'company.dart';
 import 'finance.dart';
 import 'human_resource.dart';
+import 'logistics.dart';
 import 'market.dart';
+import 'marketing.dart';
 import 'player_role.dart';
+import 'production.dart';
+import 'sales.dart';
 import 'warehouse.dart';
 
 class GameState {
@@ -21,6 +22,10 @@ class GameState {
   final Finance finance;
   final Warehouse warehouse;
   final HumanResource humanResource;
+  final Production production;
+  final Sales sales;
+  final Marketing marketing;
+  final Logistics logistics;
 
   const GameState({
     required this.simTime,
@@ -30,6 +35,10 @@ class GameState {
     required this.finance,
     required this.warehouse,
     required this.humanResource,
+    required this.production,
+    required this.sales,
+    required this.marketing,
+    required this.logistics,
   });
 
   GameState copyWith({
@@ -40,6 +49,10 @@ class GameState {
     Finance? finance,
     Warehouse? warehouse,
     HumanResource? humanResource,
+    Production? production,
+    Sales? sales,
+    Marketing? marketing,
+    Logistics? logistics,
   }) {
     return GameState(
       simTime: simTime ?? this.simTime,
@@ -49,6 +62,10 @@ class GameState {
       finance: finance ?? this.finance,
       warehouse: warehouse ?? this.warehouse,
       humanResource: humanResource ?? this.humanResource,
+      production: production ?? this.production,
+      sales: sales ?? this.sales,
+      marketing: marketing ?? this.marketing,
+      logistics: logistics ?? this.logistics,
     );
   }
 
@@ -60,6 +77,10 @@ class GameState {
         'finance': finance.toJson(),
         'warehouse': warehouse.toJson(),
         'humanResource': humanResource.toJson(),
+        'production': production.toJson(),
+        'sales': sales.toJson(),
+        'marketing': marketing.toJson(),
+        'logistics': logistics.toJson(),
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -71,10 +92,12 @@ class GameState {
         company: Company.fromJson(json['company'] as Map<String, dynamic>),
         market: Market.fromJson(json['market'] as Map<String, dynamic>),
         finance: Finance.fromJson(json['finance'] as Map<String, dynamic>),
-        warehouse:
-            Warehouse.fromJson(json['warehouse'] as Map<String, dynamic>),
-        humanResource: HumanResource.fromJson(
-            json['humanResource'] as Map<String, dynamic>),
+        warehouse: Warehouse.fromJson(json['warehouse'] as Map<String, dynamic>),
+        humanResource: HumanResource.fromJson(json['humanResource'] as Map<String, dynamic>),
+        production: Production.fromJson(json['production'] as Map<String, dynamic>),
+        sales: Sales.fromJson(json['sales'] as Map<String, dynamic>),
+        marketing: Marketing.fromJson(json['marketing'] as Map<String, dynamic>),
+        logistics: Logistics.fromJson(json['logistics'] as Map<String, dynamic>),
       );
 
   /// Initial seeded state for a new game
@@ -83,8 +106,12 @@ class GameState {
         currentRole: PlayerRole.ceo,
         company: const Company(name: 'Headquartz Corp', level: 1),
         market: const Market(demand: 50, price: 50.0),
-        finance: const Finance(cash: 10000.0),
+        finance: const Finance(cash: 100000.0),
         warehouse: const Warehouse(),
         humanResource: const HumanResource(),
+        production: const Production(),
+        sales: const Sales(),
+        marketing: const Marketing(),
+        logistics: const Logistics(),
       );
 }
