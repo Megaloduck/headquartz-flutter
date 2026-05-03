@@ -27,7 +27,7 @@ dependencies:
   path_provider: ^2.1.4
 
   # Networking
-  bonsoir: ^5.1.10
+  #bonsoir: ^5.1.10
 
   # UI / Desktop
   fl_chart: ^1.2.0
