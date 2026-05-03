@@ -113,7 +113,7 @@ class GameplayTopbar extends StatelessWidget {
               icon: const Icon(Icons.exit_to_app_rounded, size: 16),
               onPressed: onLeave,
             ),
-            const WindowControls(),
+            const SizedBox(width: Spacing.sm),
           ],
         ),
       ),
