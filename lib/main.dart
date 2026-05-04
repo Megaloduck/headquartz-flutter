@@ -6,5 +6,10 @@ import 'bootstrap/app_initializer.dart';
 
 Future<void> main() async {
   await AppInitializer.initialize();
-  runApp(const ProviderScope(child: HeadquartzApp()));
+
+  runApp(
+    const ProviderScope(
+      child: HeadquartzApp(),
+    ),
+  );
 }

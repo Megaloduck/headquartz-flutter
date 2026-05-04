@@ -5,8 +5,8 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.0
-  flutter: ">=3.27.0"
+  sdk: ^3.11.0
+
 
 dependencies:
   flutter:
@@ -14,6 +14,7 @@ dependencies:
 
   # State management
   flutter_riverpod: ^3.3.1
+  riverpod_annotation: ^4.0.2
 
   # Routing
   go_router: ^17.2.3
@@ -25,9 +26,6 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.1.4
-
-  # Networking
-  #bonsoir: ^5.1.10
 
   # UI / Desktop
   fl_chart: ^1.2.0
@@ -49,6 +47,3 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  assets:
-    - assets/images/
-    - assets/audio/
